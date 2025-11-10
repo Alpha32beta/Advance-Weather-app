@@ -1,0 +1,69 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-transparent-bg: #25253f;
+  --color-transparent-bg-hover: #2F2F49;
+  --color-orange-500: hsl(28, 100%, 52%);
+  --color-lightblue: hsl(233, 67%, 56%);
+  --color-darkblue: hsl(248, 70%, 36%);
+}
+
+@layer base {
+  *,
+  *::after,
+  *::before {
+    @apply box-border;
+  }
+  body {
+    @apply m-0 p-0 bg-[#02012B] text-white text-base;
+  }
+}
+
+::-webkit-scrollbar {
+  background: transparent;
+  width: 8px;
+}
+
+.bricolage {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+}
+
+.dm-sans-light {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.dm-sans-regular {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.dm-sans-semibold {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.dm-sans-semibold-italic {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.dm-sans-bold {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
