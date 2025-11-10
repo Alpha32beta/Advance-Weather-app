@@ -65,7 +65,16 @@ const WeatherInfoPage = ({ loading, weatherData }) => {
               </div> : <div className="h-full flex flex-col md:flex-row justify-between items-center">
                 <div className="text-center md:text-start">
                   <h2 className="text-3xl dm-sans-semibold mb-2">{weatherData?.cityName}, {weatherData?.cityCountry}</h2>
-                  <p className="text-base text-gray-300">{allDays[new Date().getDay()]}, {allMonths[new Date().getMonth()]} {new Date().getDay()}, {new Date().getFullYear()}</p>
+                  <p className="text-base text-gray-300">
+                    {new Date().toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+
+
                 </div>
                 <div className="flex items-center gap-8">
                   <img className="w-24" src={today_weather_icon} alt="sunny" />
