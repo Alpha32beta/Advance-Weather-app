@@ -1,26 +1,71 @@
+// src/components/MainContent.jsx
 import { useContext, useEffect, useState } from 'react';
 import ErrorPage from './ErrorPage';
 import WeatherInfoPage from './WeatherInfoPage';
+import SavedLocations from './SavedLocations';
 import searchicon from "/src/assets/images/icon-search.svg";
 import { imperialContext } from '../context/imperialContext';
+import { supabase } from '../supabaseClient';
 
-const MainContent = () => {
+const MainContent = ({ user }) => {
     const [apiError, setApiError] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [weatherData, setWeatherData] = useState(null);
     const [citySuggestions, setCitySuggestions] = useState([]);
+    const [savedLocations, setSavedLocations] = useState([]);
     let suggestionDelay = 500;
     const value = useContext(imperialContext);
     const cityEndpoint = "https://geocoding-api.open-meteo.com/v1/search?name=";
 
-   
     const defaultCity = {
         name: "Lagos",
         country: "Nigeria",
-        latitude: 40.7128,
-        longitude: -74.0060
+        latitude: 6.5244,
+        longitude: 3.3792
     };
+
+    // Load saved locations
+    useEffect(() => {
+        loadSavedLocations();
+    }, [user]);
+
+    async function loadSavedLocations() {
+        const { data, error } = await supabase
+            .from('saved_locations')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            setSavedLocations(data);
+        }
+    }
+
+    async function saveLocation(city, country, lat, lon) {
+        const { data, error } = await supabase
+            .from('saved_locations')
+            .upsert(
+                {
+                    user_id: user.id,
+                    city_name: city,
+                    country: country,
+                    latitude: lat,
+                    longitude: lon,
+                },
+                { onConflict: 'user_id,city_name' }
+            )
+            .select();
+
+        if (!error) {
+            loadSavedLocations();
+        }
+    }
+
+    async function deleteLocation(id) {
+        await supabase.from('saved_locations').delete().eq('id', id);
+        loadSavedLocations();
+    }
 
     async function handleInputChange(e) {
         let valueInput = e.target.value;
@@ -74,6 +119,8 @@ const MainContent = () => {
             setWeatherData({
                 cityName: city,
                 cityCountry: country,
+                latitude: lat,
+                longitude: lon,
                 temperature: current.temperature_2m,
                 feelsLike: current.apparent_temperature,
                 humidity: current.relative_humidity_2m,
@@ -91,6 +138,9 @@ const MainContent = () => {
                 hourlyTime: hourly.time,
                 hourlyTemp: hourly.temperature_2m,
             });
+
+            // Save location to database
+            await saveLocation(city, country, lat, lon);
         } catch (error) {
             console.error("Error fetching weather:", error);
             setApiError(true);
@@ -119,7 +169,6 @@ const MainContent = () => {
         }
     }
 
-   
     useEffect(() => {
         fetchWeatherData(defaultCity.latitude, defaultCity.longitude, defaultCity.name, defaultCity.country);
     }, [value.imperial]);
@@ -131,11 +180,12 @@ const MainContent = () => {
             ) : (
                 <div className='mx-4 my-5 flex flex-col justify-center items-center'>
                     <h1 className='bricolage text-5xl mt-3'>How's the sky looking today?</h1>
+                    
                     <div className='mt-10 mb-5 flex flex-col md:flex-row items-center gap-3 w-full md:w-min'>
                         <div className='flex relative items-center gap-3 bg-transparent-bg focus-within:ring ring-white ring-offset-[#02012B] ring-offset-2 py-2 px-4 rounded-md w-full md:w-100'>
                             <img className='w-4' src={searchicon} alt="search icon" />
                             <input
-                                className='text-gray-300 outline-0 border-0 placeholder:text-gray-300'
+                                className='text-gray-300 outline-0 border-0 placeholder:text-gray-300 bg-transparent'
                                 type="text"
                                 onChange={handleInputChange}
                                 placeholder='Search for a place...'
@@ -147,7 +197,7 @@ const MainContent = () => {
                                         {citySuggestions.map((city, index) => (
                                             <p
                                                 key={index}
-                                                className='bg-transparent-bg-hover flex justify-between items-center p-2 rounded-md text-sm'
+                                                className='bg-transparent-bg-hover flex justify-between items-center p-2 rounded-md text-sm cursor-pointer hover:bg-opacity-80'
                                                 onClick={() => {
                                                     setSearchInput(city.name);
                                                     setCitySuggestions([]);
@@ -162,12 +212,21 @@ const MainContent = () => {
                             )}
                         </div>
                         <button
-                            className='bg-lightblue w-full md:w-24 py-2 px-4 rounded-md text-white focus:ring ring-lightblue ring-offset-[#02012B] ring-offset-2'
+                            className='bg-lightblue w-full md:w-24 py-2 px-4 rounded-md text-white focus:ring ring-lightblue ring-offset-[#02012B] ring-offset-2 hover:bg-darkblue transition-colors'
                             onClick={handleSearch}
                         >
                             Search
                         </button>
                     </div>
+
+                    {savedLocations.length > 0 && (
+                        <SavedLocations
+                            locations={savedLocations}
+                            onSelectLocation={fetchWeatherData}
+                            onDeleteLocation={deleteLocation}
+                        />
+                    )}
+
                     {weatherData && <WeatherInfoPage loading={loading} weatherData={weatherData} />}
                 </div>
             )}
