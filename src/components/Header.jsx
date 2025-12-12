@@ -1,4 +1,3 @@
-// src/components/Header.jsx
 import Button from './Button';
 import logo from '/src/assets/images/logo.svg';
 import downicon from '/src/assets/images/icon-dropdown.svg';
@@ -7,7 +6,7 @@ import { useState } from 'react';
 import Dropdown from './Dropdown';
 import { supabase } from '../supabaseClient';
 
-const Header = ({ user }) => {
+const Header = ({ user, onShowAuth }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   function handleUnitClick() {
@@ -33,15 +32,21 @@ const Header = ({ user }) => {
       <div className="flex items-center gap-3">
         <div className="relative">
           <Button onClick={handleUnitClick}>
-            <img className="w-full" src={uniticon} alt="unit icon" />
-            Units
-            <img src={downicon} alt="down icon" />
+            <img className="w-4" src={uniticon} alt="unit icon" />
+            <span className="hidden md:inline">Units</span>
+            <img className="w-3" src={downicon} alt="down icon" />
           </Button>
           {showDropdown && <Dropdown />}
         </div>
-        <Button onClick={handleSignOut}>
-          <span className="dm-sans-regular">Sign Out</span>
-        </Button>
+        {user ? (
+          <Button onClick={handleSignOut}>
+            <span className="dm-sans-regular">Sign Out</span>
+          </Button>
+        ) : (
+          <Button onClick={onShowAuth}>
+            <span className="dm-sans-regular">Sign In</span>
+          </Button>
+        )}
       </div>
     </div>
   );

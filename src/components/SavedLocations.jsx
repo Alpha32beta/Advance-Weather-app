@@ -1,4 +1,3 @@
-// src/components/SavedLocations.jsx
 const SavedLocations = ({ locations, onSelectLocation, onDeleteLocation }) => {
   return (
     <div className="w-full mb-6">

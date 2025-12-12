@@ -1,4 +1,3 @@
-// src/components/MainContent.jsx
 import { useContext, useEffect, useState } from 'react';
 import ErrorPage from './ErrorPage';
 import WeatherInfoPage from './WeatherInfoPage';
@@ -7,7 +6,7 @@ import searchicon from "/src/assets/images/icon-search.svg";
 import { imperialContext } from '../context/imperialContext';
 import { supabase } from '../supabaseClient';
 
-const MainContent = ({ user }) => {
+const MainContent = ({ user, onShowAuth }) => {
     const [apiError, setApiError] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -25,12 +24,15 @@ const MainContent = ({ user }) => {
         longitude: 3.3792
     };
 
-    // Load saved locations
     useEffect(() => {
-        loadSavedLocations();
+        if (user) {
+            loadSavedLocations();
+        }
     }, [user]);
 
     async function loadSavedLocations() {
+        if (!user) return;
+
         const { data, error } = await supabase
             .from('saved_locations')
             .select('*')
@@ -43,6 +45,10 @@ const MainContent = ({ user }) => {
     }
 
     async function saveLocation(city, country, lat, lon) {
+        if (!user) {
+            return;
+        }
+
         const { data, error } = await supabase
             .from('saved_locations')
             .upsert(
@@ -63,6 +69,7 @@ const MainContent = ({ user }) => {
     }
 
     async function deleteLocation(id) {
+        if (!user) return;
         await supabase.from('saved_locations').delete().eq('id', id);
         loadSavedLocations();
     }
@@ -139,8 +146,9 @@ const MainContent = ({ user }) => {
                 hourlyTemp: hourly.temperature_2m,
             });
 
-            // Save location to database
-            await saveLocation(city, country, lat, lon);
+            if (user) {
+                await saveLocation(city, country, lat, lon);
+            }
         } catch (error) {
             console.error("Error fetching weather:", error);
             setApiError(true);
@@ -219,7 +227,21 @@ const MainContent = ({ user }) => {
                         </button>
                     </div>
 
-                    {savedLocations.length > 0 && (
+                    {!user && weatherData && (
+                        <div className="w-full mb-6 p-4 bg-transparent-bg border border-lightblue/30 rounded-lg">
+                            <p className="text-center dm-sans-regular text-gray-300">
+                                <span className="text-lightblue">💡 Tip:</span> Sign in to save your favorite locations and access them anytime!{' '}
+                                <button
+                                    onClick={onShowAuth}
+                                    className="text-lightblue hover:text-darkblue underline transition-colors"
+                                >
+                                    Sign in now
+                                </button>
+                            </p>
+                        </div>
+                    )}
+
+                    {user && savedLocations.length > 0 && (
                         <SavedLocations
                             locations={savedLocations}
                             onSelectLocation={fetchWeatherData}

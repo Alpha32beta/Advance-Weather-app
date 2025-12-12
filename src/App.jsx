@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import MainContent from "./components/MainContent";
@@ -10,19 +9,21 @@ function App() {
   const [imperial, setImperial] = useState(true);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        setShowAuth(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -36,16 +37,16 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <Auth />;
-  }
-
   return (
     <imperialContext.Provider value={{ imperial, setImperial }}>
-      <div className="m-8 mx-auto max-w-[1200px]">
-        <Header user={user} />
-        <MainContent user={user} />
-      </div>
+      {showAuth && !user ? (
+        <Auth onClose={() => setShowAuth(false)} />
+      ) : (
+        <div className="m-8 mx-auto max-w-[1200px]">
+          <Header user={user} onShowAuth={() => setShowAuth(true)} />
+          <MainContent user={user} onShowAuth={() => setShowAuth(true)} />
+        </div>
+      )}
     </imperialContext.Provider>
   );
 }
