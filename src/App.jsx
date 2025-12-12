@@ -6,7 +6,7 @@ import { imperialContext } from "./context/imperialContext";
 import { supabase } from "./supabaseClient";
 
 function App() {
-  const [imperial, setImperial] = useState(true);
+  const [imperial, setImperial] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAuth, setShowAuth] = useState(false);

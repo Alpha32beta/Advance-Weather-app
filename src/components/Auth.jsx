@@ -38,14 +38,24 @@ const Auth = ({ onClose }) => {
     });
 
     if (error) {
-      setError(error.message);
+      if (error.message.includes('already registered')) {
+        setError('This email is already registered. Please sign in instead.');
+      } else if (error.message.includes('User already registered')) {
+        setError('An account with this email already exists. Try signing in.');
+      } else {
+        setError(error.message);
+      }
     } else {
-      setMessage(
-        'Verification email sent! Please check your email and click the verification link to activate your account. Once verified, return to this app and log in.'
-      );
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
+      if (data?.user?.identities && data.user.identities.length === 0) {
+        setError('This email is already registered. Please sign in instead.');
+      } else {
+        setMessage(
+          'Verification email sent! Please check your email and click the verification link to activate your account. Once verified, return to this app and log in.'
+        );
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+      }
     }
     setLoading(false);
   };
@@ -65,7 +75,13 @@ const Auth = ({ onClose }) => {
     });
 
     if (error) {
-      setError(error.message);
+      if (error.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please try again.');
+      } else if (error.message.includes('Email not confirmed')) {
+        setError('Please verify your email address before signing in. Check your inbox for the verification link.');
+      } else {
+        setError(error.message);
+      }
     }
     setLoading(false);
   };
